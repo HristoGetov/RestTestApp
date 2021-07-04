@@ -1,7 +1,10 @@
 package com.testapp.rest.resttestapp.ui.controller;
 
+import com.testapp.rest.resttestapp.ui.exceptions.UserServiceException;
+import com.testapp.rest.resttestapp.ui.model.request.UpdateUserDetailsRequestModel;
 import com.testapp.rest.resttestapp.ui.model.request.UserDetailsRequestModel;
 import com.testapp.rest.resttestapp.ui.model.response.UserRest;
+import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,7 @@ public class UserController {
     @GetMapping(path = "/{userId}", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<UserRest> getUser(@PathVariable String userId){
 
+        if (true)throw new UserServiceException("A User service exception is thrown");
     if (users.containsKey(userId)) {
         return new ResponseEntity<UserRest>(users.get(userId), HttpStatus.OK);
         }else {
@@ -53,13 +57,19 @@ public class UserController {
         return new ResponseEntity<UserRest>(returnValue, HttpStatus.OK);
     }
 
-    @PutMapping
-    public String updateUser(){
-        return "update user was called";
+    @PutMapping(path = "/{userId}", consumes = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
+    public UserRest updateUser(@PathVariable String userId,@Valid @RequestBody UpdateUserDetailsRequestModel updateUserDetailsRequestModel){
+        UserRest storedUserDetails = users.get(userId);
+        storedUserDetails.setFirstName(updateUserDetailsRequestModel.getFirstName());
+        storedUserDetails.setLastName(updateUserDetailsRequestModel.getLastName());
+        users.put(userId,storedUserDetails);
+        return storedUserDetails;
     }
 
-    @DeleteMapping
-    public String deleteUser(){
-        return "delete user was called";
+    @DeleteMapping(path ="/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+        users.remove(id);
+        return ResponseEntity.noContent().build();
     }
 }
